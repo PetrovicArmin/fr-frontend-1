@@ -1,0 +1,7 @@
+.Tilt {
+    height: 250px;
+    width: 250px;
+    display: flex;
+    justify-content:space-around;
+    background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(161,123,104,1) 35%, rgba(130,247,13,1) 56%, rgba(0,212,255,1) 100%);
+}
