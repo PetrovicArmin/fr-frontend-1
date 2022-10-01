@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
-import Logo from '../../components/Logo/Logo';
-import Rank from '../../components/Rank/Rank';
-import Navigation from '../../components/Navigation/Navigation';
 import Particles from 'react-tsparticles';
-import { loadFull } from "tsparticles";
-import { useCallback } from "react"; 
-import ImageLinkForm from '../../components/ImageLinkForm/ImageLinkForm';
-import './App.css';
 import 'tachyons';
-import { render } from '@testing-library/react';
+import { loadFull } from "tsparticles";
+import getClarifaiRequest from '../../helperScripts/ClarifaiFaceRecognition';
+import ImageLinkForm from '../../components/ImageLinkForm/ImageLinkForm';
+import Logo from '../../components/Logo/Logo';
+import FaceRecognition from '../../components/FaceRecognition/FaceRecognition';
+import Navigation from '../../components/Navigation/Navigation';
+import Rank from '../../components/Rank/Rank';
+import './App.css';
 
 const optionsObject = {
     fpsLimit: 50,
@@ -93,6 +93,10 @@ class App extends Component {
 
     onButtonClick = () => {
         this.setState({ input: this.input });
+        fetch(`https://api.clarifai.com/v2/models/face-detection/outputs`, getClarifaiRequest(this.input))
+            .then(response => response.text())
+            .then(result => console.log("Bounding box: ", JSON.parse(result).outputs[0].data.regions[0].region_info.bounding_box))
+            .catch(error => console.log('This is error that I got:', error));
     }
 
     render() {
@@ -115,7 +119,9 @@ class App extends Component {
                     onInputChange={this.onInputChange}
                     onButtonClick={this.onButtonClick}
                 />
-                {/*<FaceRecognition /> //ovaj dio ostaje da idući put dovršimo!*/}
+                <FaceRecognition 
+                    imageUrl={this.state.input}
+                /> 
             </div>
         );
     }
