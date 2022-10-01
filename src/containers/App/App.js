@@ -95,7 +95,10 @@ class App extends Component {
         this.setState({ input: this.input });
         fetch(`https://api.clarifai.com/v2/models/face-detection/outputs`, getClarifaiRequest(this.input))
             .then(response => response.text())
-            .then(result => console.log("Bounding box: ", JSON.parse(result).outputs[0].data.regions[0].region_info.bounding_box))
+            .then(result => {
+                //This here will worry about surrounding the face with boundary box on UI
+                console.log("Bounding box: ", JSON.parse(result).outputs[0].data.regions[0].region_info.bounding_box) 
+            })
             .catch(error => console.log('This is error that I got:', error));
     }
 
