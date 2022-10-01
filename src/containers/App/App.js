@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import Logo from '../../components/Logo/Logo';
 import Rank from '../../components/Rank/Rank';
 import Navigation from '../../components/Navigation/Navigation';
@@ -8,6 +8,7 @@ import { useCallback } from "react";
 import ImageLinkForm from '../../components/ImageLinkForm/ImageLinkForm';
 import './App.css';
 import 'tachyons';
+import { render } from '@testing-library/react';
 
 const optionsObject = {
     fpsLimit: 50,
@@ -29,7 +30,7 @@ const optionsObject = {
         },
         repulse: {
           distance: 200,
-          duration: 0.4,
+          duration: 1.4,
         },
       },
     },
@@ -54,7 +55,7 @@ const optionsObject = {
           default: "bounce",
         },
         random: false,
-        speed: 6,
+        speed: 3,
         straight: false,
       },
       number: {
@@ -77,27 +78,47 @@ const optionsObject = {
     detectRetina: true,
 };
 
-function App() {
-    const particlesInit = useCallback(async (engine) => {
-        console.log(engine);
-        await loadFull(engine);
-    }, []);
+class App extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            input: ''
+        };
+        this.input = '';
+    }
 
-    const particlesLoaded = useCallback(async (container) => {
-        await console.log(container);
-    }, []);
+    onInputChange = (event) => {
+        this.input = event.target.value;
+    }
 
-    return (
-    <div className="App">
-        <Particles className='particles' init={particlesInit} loaded={particlesLoaded} options={optionsObject}/>
-        <Navigation />
-        <Logo />
-        <Rank />
-        <ImageLinkForm />
-        {/*<FaceRecognition /> //ovaj dio ostaje da idući put dovršimo!*/}
+    onButtonClick = () => {
+        this.setState({ input: this.input });
+    }
 
-    </div>
-  );
+    render() {
+        const particlesInit = async (engine) => {
+            console.log(engine);
+            await loadFull(engine);
+        };
+    
+        const particlesLoaded = async (container) => {
+            await console.log(container);
+        };
+    
+        return (
+            <div className="App">
+                <Particles className='particles' init={particlesInit} loaded={particlesLoaded} options={optionsObject}/>
+                <Navigation />
+                <Logo />
+                <Rank />
+                <ImageLinkForm 
+                    onInputChange={this.onInputChange}
+                    onButtonClick={this.onButtonClick}
+                />
+                {/*<FaceRecognition /> //ovaj dio ostaje da idući put dovršimo!*/}
+            </div>
+        );
+    }
 }
 
 export default App;

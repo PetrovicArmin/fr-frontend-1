@@ -11,8 +11,8 @@ class ImageLinkForm extends Component {
             <div>
                 <p className='f3'>{`This software will detect faces on your picture:`}</p>
                 <div className='form center ma4 pa4 br3'>
-                    <input className='f4 pa2 w-70 center' type="search" placeholder="Enter your image url:"></input>
-                    <button className='w-30 grow f4 link ph4 pv2 dib white bg-light-blue'>Detect</button>
+                    <input className='f4 pa2 w-70 center' type="search" onInput={this.props.onInputChange} placeholder="Enter your image url:"></input>
+                    <button className='w-30 grow f4 link ph4 pv2 dib white bg-light-blue' onClick={this.props.onButtonClick}>Detect</button>
                 </div>
             </div>
         );
