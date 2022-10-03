@@ -1,13 +1,15 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import Particles from 'react-tsparticles';
 import 'tachyons';
 import { loadFull } from "tsparticles";
-import getClarifaiRequest from '../../helperScripts/ClarifaiFaceRecognition';
+import FaceRecognition from '../../components/FaceRecognition/FaceRecognition';
 import ImageLinkForm from '../../components/ImageLinkForm/ImageLinkForm';
 import Logo from '../../components/Logo/Logo';
-import FaceRecognition from '../../components/FaceRecognition/FaceRecognition';
 import Navigation from '../../components/Navigation/Navigation';
 import Rank from '../../components/Rank/Rank';
+import getClarifaiRequest from '../../helperScripts/ClarifaiFaceRecognition';
+import SignIn from '../../components/SignIn/SignIn';
+import Register from '../../components/Register/Register';
 import './App.css';
 
 const optionsObject = {
@@ -82,7 +84,9 @@ class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            input: ''
+            input: '',
+            box: {},
+            page: 'sign in' //can be 'sign in', 'register', 'home'
         };
         this.input = '';
     }
@@ -91,31 +95,38 @@ class App extends Component {
         this.input = event.target.value;
     }
 
+    calculateFaceLocation = (box) => {
+        const image = document.getElementById('myImage');
+        const width = Number(image.width);
+        const height = Number(image.height);
+
+        return {
+            leftCol: box.left_col * width,
+            topRow: box.top_row * height,
+            rightCol: width - (box.right_col * width),
+            bottomRow: height - (box.bottom_row * height)
+        };
+    }
+
+    updateCoordinates = (object) => {
+        this.setState({box: object});
+    }
+
     onButtonClick = () => {
         this.setState({ input: this.input });
         fetch(`https://api.clarifai.com/v2/models/face-detection/outputs`, getClarifaiRequest(this.input))
             .then(response => response.text())
             .then(result => {
                 //This here will worry about surrounding the face with boundary box on UI
-                console.log("Bounding box: ", JSON.parse(result).outputs[0].data.regions[0].region_info.bounding_box) 
+                const boundingBox = JSON.parse(result).outputs[0].data.regions[0].region_info.bounding_box;
+                this.updateCoordinates(this.calculateFaceLocation(boundingBox));
             })
             .catch(error => console.log('This is error that I got:', error));
     }
 
-    render() {
-        const particlesInit = async (engine) => {
-            console.log(engine);
-            await loadFull(engine);
-        };
-    
-        const particlesLoaded = async (container) => {
-            await console.log(container);
-        };
-    
+    displayHome = () => {
         return (
-            <div className="App">
-                <Particles className='particles' init={particlesInit} loaded={particlesLoaded} options={optionsObject}/>
-                <Navigation />
+            <Fragment>
                 <Logo />
                 <Rank />
                 <ImageLinkForm 
@@ -124,7 +135,42 @@ class App extends Component {
                 />
                 <FaceRecognition 
                     imageUrl={this.state.input}
+                    box={this.state.box}
                 /> 
+            </Fragment>
+        );
+    }
+
+    displaySignIn = () => {
+        return <SignIn 
+                    pageRouter = { this.goToPage }
+                />;
+    }
+
+    displayRegister = () => {
+        return <Register 
+                    pageRouter = { this.goToPage }
+                />
+    }
+
+    goToPage = (page) => { this.setState({ page: page }); }
+
+    render() {
+        const particlesInit = async (engine) => {
+            await loadFull(engine);
+        };
+    
+        const particlesLoaded = async (container) => {
+        };
+    
+        return (
+            <div className="App">
+                <Particles className='particles' init={particlesInit} loaded={particlesLoaded} options={optionsObject}/>
+                <Navigation currentPage={ this.state.page } pageRouter={ this.goToPage }/>
+                {
+                    this.state.page === 'home' ? this.displayHome() 
+                    :(this.state.page === 'sign in' ? this.displaySignIn() : this.displayRegister())
+                }                
             </div>
         );
     }
