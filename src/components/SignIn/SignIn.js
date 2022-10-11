@@ -4,6 +4,15 @@ import "./SignIn.css";
 class SignIn extends Component {
     constructor(props) {
         super(props);
+        this.user = {};
+    }
+
+    changeEmail = (event) => {
+        this.user.email = event.target.value;
+    }
+
+    changePassword = (event) => {
+        this.user.password = event.target.value;
     }
 
     render() { 
@@ -15,16 +24,16 @@ class SignIn extends Component {
                         <legend className="f4 fw6 ph0 mh0">Sign In</legend>
                         <div className="mt3">
                             <label className="db fw6 lh-copy f6" htmlFor="email-address">Email</label>
-                            <input className="pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100" type="email" name="email-address"  id="email-address" />
+                            <input onChange={this.changeEmail} className="pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100" type="email" name="email-address"  id="email-address" />
                         </div>
                         <div className="mv3">
                             <label className="db fw6 lh-copy f6" htmlFor="password">Password</label>
-                            <input className="b pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100" type="password" name="password"  id="password" />
+                            <input onChange={this.changePassword} className="b pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100" type="password" name="password"  id="password" />
                         </div>
                         <label className="pa0 ma0 lh-copy f6 pointer"><input type="checkbox" /> Remember me</label>
                         </fieldset>
                         <div className="">
-                        <input onClick={() => this.props.pageRouter('home')} className="b ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib" type="submit" value="Sign in" />
+                        <input onClick={() => this.props.pageRouter('home', this.user)} className="b ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib" type="submit" value="Sign in" />
                         </div>
                         <div className="lh-copy mt3">
                         <p onClick={() => this.props.pageRouter('register')} className="pointer f6 link dim black db">Not registered? Not a problem!</p>

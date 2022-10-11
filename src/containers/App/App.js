@@ -86,7 +86,8 @@ class App extends Component {
         this.state = {
             input: '',
             box: {},
-            page: 'sign in' //can be 'sign in', 'register', 'home'
+            page: 'sign in', //can be 'sign in', 'register', 'home'
+            user: {}
         };
         this.input = '';
     }
@@ -117,9 +118,10 @@ class App extends Component {
         fetch(`https://api.clarifai.com/v2/models/face-detection/outputs`, getClarifaiRequest(this.input))
             .then(response => response.text())
             .then(result => {
-                //This here will worry about surrounding the face with boundary box on UI
                 const boundingBox = JSON.parse(result).outputs[0].data.regions[0].region_info.bounding_box;
                 this.updateCoordinates(this.calculateFaceLocation(boundingBox));
+                fetch(`http://localhost:3001/rank?email=${this.state.user.email}`, {method: "put"})
+                .then(res => res.json()).then(data => this.setState({ user: Object.assign(this.state.user, data) }));
             })
             .catch(error => console.log('This is error that I got:', error));
     }
@@ -128,7 +130,7 @@ class App extends Component {
         return (
             <Fragment>
                 <Logo />
-                <Rank />
+                <Rank user={ this.state.user }/>
                 <ImageLinkForm 
                     onInputChange={this.onInputChange}
                     onButtonClick={this.onButtonClick}
@@ -153,7 +155,82 @@ class App extends Component {
                 />
     }
 
-    goToPage = (page) => { this.setState({ page: page }); }
+    saveNewUser = (user) => {
+        return new Promise(res => {
+            fetch("http://localhost:3001/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(user)
+            }).then(response => {
+                if (response.status != 200)
+                    res("Error");
+
+                return response.json();
+            }).then(value => res(value));
+        });
+    }
+
+    getExistingUser = (user) => {
+        return new Promise((res) => {
+            fetch("http://localhost:3001/signin", {
+                method: 'post',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(user)
+            }).then(response => {
+                if (response.status != 200) 
+                    res("Error");
+                
+                return response.json();
+            }).then(value => res(value));
+        });    
+    }
+
+    goToPage = (page, user=undefined) => { 
+        const previousPage = this.state.page;
+
+        if (user?.email && user?.password) 
+            this.setState({ user });
+
+        if (page === 'home') {
+            switch(previousPage) {
+                case 'register': 
+                    this.saveNewUser(user).then(value => {
+                        if (value !== "Error") {
+                            this.setState({
+                                page: page,
+                                user: value
+                            });
+                        }
+                    });
+                    break;
+                case 'sign in': 
+                    this.getExistingUser(user).then(value => {
+                        if (value !== "Error") {
+                            this.setState({
+                                page: page, 
+                                user: value
+                            });
+                        }
+                    });
+                    break;
+                default:
+                    this.setState({page: page});
+            }
+        } else {
+            this.setState({
+                page: page, 
+                user: {},
+                input: '',
+                box: {}
+            });
+            this.input = '';
+        }
+
+        //todo: kasnije izbrisati ovaj console.log da nam ne smeta.
+        console.log("New user: ", Object.assign(this.state.user, user));
+    }
 
     render() {
         const particlesInit = async (engine) => {
