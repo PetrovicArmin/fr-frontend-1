@@ -120,7 +120,7 @@ class App extends Component {
             .then(result => {
                 const boundingBox = JSON.parse(result).outputs[0].data.regions[0].region_info.bounding_box;
                 this.updateCoordinates(this.calculateFaceLocation(boundingBox));
-                fetch(`http://localhost:3001/rank?email=${this.state.user.email}`, {method: "put"})
+                fetch(`https://fr-backend-1.herokuapp.com/rank?email=${this.state.user.email}`, {method: "put"})
                 .then(res => res.json()).then(data => this.setState({ user: Object.assign(this.state.user, data) }));
             })
             .catch(error => console.log('This is error that I got:', error));
@@ -156,8 +156,8 @@ class App extends Component {
     }
 
     saveNewUser = (user) => {
-        return new Promise(res => {
-            fetch("http://localhost:3001/register", {
+        return new Promise((res, rej) => {
+            fetch("https://fr-backend-1.herokuapp.com/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -168,13 +168,14 @@ class App extends Component {
                     res("Error");
 
                 return response.json();
-            }).then(value => res(value));
+            }).then(value => res(value))
+              .catch(value => rej(value));
         });
     }
 
     getExistingUser = (user) => {
-        return new Promise((res) => {
-            fetch("http://localhost:3001/signin", {
+        return new Promise((res, rej) => {
+            fetch("https://fr-backend-1.herokuapp.com/signin", {
                 method: 'post',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(user)
@@ -183,7 +184,8 @@ class App extends Component {
                     res("Error");
                 
                 return response.json();
-            }).then(value => res(value));
+            }).then(value => res(value))
+              .catch(value => rej(value));
         });    
     }
 
@@ -203,7 +205,7 @@ class App extends Component {
                                 user: value
                             });
                         }
-                    });
+                    }).catch(console.log);
                     break;
                 case 'sign in': 
                     this.getExistingUser(user).then(value => {
@@ -213,7 +215,7 @@ class App extends Component {
                                 user: value
                             });
                         }
-                    });
+                    }).catch(value => console.log(value));
                     break;
                 default:
                     this.setState({page: page});
